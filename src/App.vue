@@ -55,9 +55,9 @@ onMounted(() => {
 
       <!-- 2. Zone avec l'image fond.png fixe et répétition désactivée -->
       <div 
-        class="relative w-full bg-fixed bg-center bg-no-repeat bg-cover"
-        :style="{ backgroundImage: `url(${fondUrl})` }"
-      >
+  class="relative w-full bg-scroll md:bg-fixed bg-top md:bg-center bg-no-repeat bg-[length:100%_auto] md:bg-cover"
+  :style="{ backgroundImage: `url(${fondUrl})` }"
+>
         <!-- Voile léger pour maintenir le contraste et la lisibilité du texte -->
         <div class="absolute inset-0 bg-white/40 pointer-events-none"></div>
 

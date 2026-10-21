@@ -1,6 +1,6 @@
 <script setup>
 import { useModal } from '../../composables/useModal';
-import Countdown from './sections/Countdown.vue';
+import Countdown from '../sections/Countdown.vue';
 
 const { openModal } = useModal();
 </script>
@@ -12,8 +12,7 @@ const { openModal } = useModal();
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-emerald-600/20 border border-emerald-400/30 text-emerald-300 text-xs sm:text-sm font-semibold">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div class="inline-flex items-center  py-1.5 rounded-full">
             Événement Caritatif & Éco-responsable • 1ère Édition
           </div>
 

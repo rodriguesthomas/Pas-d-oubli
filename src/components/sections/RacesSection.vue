@@ -17,9 +17,6 @@ const handleRegister = (race) => {
   <section id="epreuves" class="py-20 bg-slate-100/70 border-y border-slate-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-14">
-        <span class="text-emerald-700 bg-white border border-emerald-200 text-xs uppercase font-bold tracking-wider px-3.5 py-1 rounded-full">
-          6 formats pour tous
-        </span>
         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">Choisissez votre défi solidaire</h2>
         <p class="text-slate-600 mt-2 text-sm sm:text-base">
           Tarif simple et transparent : 1 € par kilomètre parcouru (gratuit pour les moins de 10 ans). 100 % reversé à France Alzheimer 37.

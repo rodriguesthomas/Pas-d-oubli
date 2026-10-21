@@ -1,5 +1,5 @@
 <script setup>
-import logoUrl from '../../assets/images/logo.jpg';
+import logoUrl from '../../assets/logo.png';
 
 const pillars = [
   {
@@ -30,15 +30,15 @@ const pillars = [
 </script>
 
 <template>
-  <section id="cause" class="py-20 bg-white">
+  <section id="cause" class="py-20 bg-transparent">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-14">
         <span class="text-emerald-700 bg-white border border-emerald-200 text-xs uppercase font-bold tracking-wider px-3.5 py-1 rounded-full">
-          Notre Mission de Cœur[cite: 1]
+          Notre Mission de Cœur 
         </span>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">Pourquoi courons-nous pour France Alzheimer 37 ?[cite: 1]</h2>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">Pourquoi courons-nous pour France Alzheimer 37 ? </h2>
         <p class="text-slate-600 mt-2 text-sm sm:text-base">
-          L’intégralité des bénéfices générés par nos actions sera reversée à France Alzheimer 37 afin de contribuer à ses missions.[cite: 1]
+          L’intégralité des bénéfices générés par nos actions sera reversée à France Alzheimer 37 afin de contribuer à ses missions. 
         </p>
       </div>
 
@@ -50,25 +50,25 @@ const pillars = [
               <div class="w-14 h-14 bg-white rounded-2xl shadow-sm border border-emerald-100 flex items-center justify-center p-2">
                 <img :src="logoUrl" alt="Logo Pas d'oubli" class="w-full h-full object-contain" />
               </div>
-              <span class="text-2xl font-black text-slate-400">+[cite: 1]</span>
+              <span class="text-2xl font-black text-slate-400">+ </span>
               <div class="px-3 py-2 bg-white rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[10px] font-bold">FA[cite: 1]</div>
-                <span class="font-extrabold text-xs text-slate-800 leading-tight">FRANCE<br><span class="text-emerald-700">ALZHEIMER 37[cite: 1]</span></span>
+                <div class="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[10px] font-bold">FA </div>
+                <span class="font-extrabold text-xs text-slate-800 leading-tight">FRANCE<br><span class="text-emerald-700">ALZHEIMER 37 </span></span>
               </div>
             </div>
 
-            <h3 class="text-xl font-bold text-slate-900 mb-3">Un partenariat transparent & engagé[cite: 1]</h3>
+            <h3 class="text-xl font-bold text-slate-900 mb-3">Un partenariat transparent & engagé </h3>
             <p class="text-slate-600 text-sm leading-relaxed mb-4">
-              France Alzheimer 37 est la seule association départementale reconnue d'utilité publique dédiée aux personnes malades et à leurs familles.[cite: 1]
+              France Alzheimer 37 est la seule association départementale reconnue d'utilité publique dédiée aux personnes malades et à leurs familles. 
             </p>
             <p class="text-slate-600 text-sm leading-relaxed">
-              Le dimanche 23 mai 2027, les représentants de l'association seront présents sur le village pour informer, échanger et animer des ateliers interactifs.[cite: 1]
+              Le dimanche 23 mai 2027, les représentants de l'association seront présents sur le village pour informer, échanger et animer des ateliers interactifs. 
             </p>
           </div>
 
           <div class="mt-8 pt-6 border-t border-emerald-200/60 flex items-center justify-between text-xs font-semibold text-emerald-800">
-            <span><i class="fa-solid fa-handshake mr-1.5"></i>Convention officielle tripartite[cite: 1]</span>
-            <span class="text-slate-500">Athée-sur-Cher[cite: 1]</span>
+            <span><i class="fa-solid fa-handshake mr-1.5"></i>Convention officielle tripartite </span>
+            <span class="text-slate-500">Athée-sur-Cher </span>
           </div>
         </div>
 
@@ -82,8 +82,8 @@ const pillars = [
             <div :class="`w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-3 ${pillar.color}`">
               <i :class="pillar.icon"></i>
             </div>
-            <h4 class="font-bold text-slate-900 mb-1.5 text-base">{{ pillar.title }}[cite: 1]</h4>
-            <p class="text-slate-600 text-xs leading-relaxed">{{ pillar.desc }}[cite: 1]</p>
+            <h4 class="font-bold text-slate-900 mb-1.5 text-base">{{ pillar.title }} </h4>
+            <p class="text-slate-600 text-xs leading-relaxed">{{ pillar.desc }} </p>
           </div>
         </div>
       </div>

@@ -7,7 +7,7 @@ const { days, hours, minutes, seconds } = useCountdown("2027-05-23T09:00:00");
 <template>
   <div class="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
     <div class="absolute -top-3 right-6 bg-emerald-600 text-white text-[11px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-md">
-      Top Départ 2027
+      Top Départ 
     </div>
 
     <div class="flex items-center gap-3 mb-6">

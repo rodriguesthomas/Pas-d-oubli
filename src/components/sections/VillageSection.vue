@@ -35,13 +35,13 @@ const features = [
           <span
             class="inline-flex items-center px-3.5 py-1.5 rounded-full bg-emerald-600/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold"
           >
-            Projet Intergénérationnel[cite: 1]
+            Projet Intergénérationnel 
           </span>
           <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Un village festif[cite: 1]
+            Un village festif 
           </h2>
           <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
-            Parce que la solidarité unit toutes les générations.[cite: 1]
+            Parce que la solidarité unit toutes les générations. 
           </p>
 
           <div class="space-y-4 pt-2">
@@ -51,15 +51,15 @@ const features = [
               <div
                 class="w-10 h-10 rounded-xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-lg flex-shrink-0"
               >
-                🥞[cite: 1]
+                🥞 
               </div>
               <div>
                 <h4 class="font-bold text-white text-base">
-                  Stand Gourmand & Crêpes pour leur camp d'été[cite: 1]
+                  Stand Gourmand & Crêpes pour leur camp d'été 
                 </h4>
                 <p class="text-slate-300 text-xs mt-1">
                   100% des recettes financent le séjour d'été des jeunes du
-                  centre.[cite: 1]
+                  centre. 
                 </p>
               </div>
             </div>
@@ -70,15 +70,15 @@ const features = [
               <div
                 class="w-10 h-10 rounded-xl bg-emerald-400 text-slate-900 flex items-center justify-center font-bold text-lg flex-shrink-0"
               >
-                🎯[cite: 1]
+                🎯 
               </div>
               <div>
                 <h4 class="font-bold text-white text-base">
-                  Encadrement des Courses Enfants & Jeux[cite: 1]
+                  Encadrement des Courses Enfants & Jeux 
                 </h4>
                 <p class="text-slate-300 text-xs mt-1">
                   Échauffement ludique, maquillage, jeux géants et remise des
-                  médailles.[cite: 1]
+                  médailles. 
                 </p>
               </div>
             </div>
@@ -94,10 +94,10 @@ const features = [
           >
             <i :class="`${feat.icon} text-3xl mb-3`"></i>
             <h4 class="font-bold text-lg text-white">
-              {{ feat.title }}[cite: 1]
+              {{ feat.title }} 
             </h4>
             <p class="text-xs text-slate-300 mt-1 leading-relaxed">
-              {{ feat.desc }}[cite: 1]
+              {{ feat.desc }} 
             </p>
           </div>
         </div>

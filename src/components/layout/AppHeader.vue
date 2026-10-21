@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import logoUrl from '@/assets/images/logo.jpg';
+import logoUrl from '../../assets/logo.png';
 
 const isMobileMenuOpen = ref(false);
 const toggleMenu = () => (isMobileMenuOpen.value = !isMobileMenuOpen.value);

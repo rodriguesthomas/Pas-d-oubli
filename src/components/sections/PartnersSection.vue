@@ -57,7 +57,7 @@ const { openModal } = useModal();
         <div class="h-28 rounded-2xl border border-slate-200 bg-slate-50/50 p-4 flex flex-col items-center justify-center text-center hover:bg-white transition shadow-sm">
           <i class="fa-solid fa-store text-2xl text-slate-700 mb-1"></i>
           <span class="font-extrabold text-xs text-slate-800">Artisans & Commerçants </span>
-          <span class="text-[10px] text-slate-400">Dotations Tombola </span>
+          <span class="text-[10px] text-slate-400">Dotations / Ravito & Logistique</span>
         </div>
       </div>
     </div>

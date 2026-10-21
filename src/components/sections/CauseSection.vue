@@ -66,10 +66,7 @@ const pillars = [
             </p>
           </div>
 
-          <div class="mt-8 pt-6 border-t border-emerald-200/60 flex items-center justify-between text-xs font-semibold text-emerald-800">
-            <span><i class="fa-solid fa-handshake mr-1.5"></i>Convention officielle tripartite </span>
-            <span class="text-slate-500">Athée-sur-Cher </span>
-          </div>
+          
         </div>
 
         <!-- Piliers d'actions -->

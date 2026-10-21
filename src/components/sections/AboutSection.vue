@@ -32,8 +32,7 @@ import logoUrl from '../../assets/logo.png';
           <p>
             Notre nom porte un double sens.  Pas d’Oubli, c’est ne pas
             oublier les personnes atteintes de la maladie d’Alzheimer, leurs
-            histoires, leurs souvenirs et tout ce qui fait leur identité.[cite:
-            1] Mais c’est aussi le « pas » que chacun peut faire pour agir,
+            histoires, leurs souvenirs et tout ce qui fait leur identité. Mais c’est aussi le « pas » que chacun peut faire pour agir,
             avancer et participer à une cause qui nous concerne tous. 
             Chaque geste compte, chaque mobilisation a du sens et chaque pas
             nous rapproche d’un avenir où la maladie sera mieux comprise et

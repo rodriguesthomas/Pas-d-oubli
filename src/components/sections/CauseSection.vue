@@ -42,7 +42,7 @@ const pillars = [
         </p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
         <!-- Carte Partenariat -->
         <div class="md:col-span-5 bg-gradient-to-br from-emerald-50 via-teal-50 to-white rounded-3xl p-8 border border-emerald-100 flex flex-col justify-between h-full">
           <div>

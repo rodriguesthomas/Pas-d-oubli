@@ -27,10 +27,10 @@ const handleRegister = (race) => {
         <div 
           v-for="race in RACES" 
           :key="race.id" 
-          class="bg-white rounded-3xl overflow-hidden border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-lg transition duration-200"
+          class="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-lg transition duration-200"
         >
           <!-- Entête de carte -->
-          <div :class="`p-5 bg-gradient-to-r ${race.themeGradient} text-white flex justify-between items-center`">
+          <div :class="`p-5  ${race.themeGradient} text-white flex justify-between items-center`">
             <div>
               <span class="text-xs uppercase font-extrabold tracking-wider text-emerald-100">{{ race.ageTag }}</span>
               <h3 class="text-2xl font-black">{{ race.name }}</h3>

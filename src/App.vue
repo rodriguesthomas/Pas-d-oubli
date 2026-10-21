@@ -22,6 +22,7 @@ import ContactSection from './components/sections/ContactSection.vue';
 
 // Espace d'administration
 import AdminDashboard from './components/admin/AdminDashboard.vue';
+import FaqSection from './components/sections/FaqSection.vue';
 
 // Modales & Notifications
 import RegistrationModal from './components/modals/RegistrationModal.vue';
@@ -70,6 +71,7 @@ onMounted(() => {
           <PracticalSection />
           <PartnersSection />
           <ContactSection />
+          <FaqSection />
         </div>
       </div>
     </main>

@@ -5,7 +5,15 @@ import { useToast } from '../../composables/useToast';
 
 const { triggerToast } = useToast();
 
-const currentTab = ref('messages'); // 'messages' | 'benevoles' | 'faq'
+// État d'authentification
+const user = ref(null);
+const authLoading = ref(true);
+const loginEmail = ref('');
+const loginPassword = ref('');
+const loginError = ref('');
+
+// Données de l'admin
+const currentTab = ref('messages');
 const messages = ref([]);
 const faqs = ref([]);
 const volunteers = ref([]);
@@ -14,7 +22,6 @@ const selectedMessage = ref(null);
 const showFaqModal = ref(false);
 const faqForm = ref({ question: '', reponse: '' });
 
-// Libellés clairs pour les disponibilités
 const availabilityLabels = {
   jour_j: 'Le jour J (dimanche)',
   veille: 'La veille (samedi)',
@@ -22,7 +29,6 @@ const availabilityLabels = {
   avant: 'En amont / Préparation'
 };
 
-// Libellés pour chaque pôle
 const poleLabels = {
   communication: 'Communication',
   animation: 'Animation',
@@ -33,20 +39,52 @@ const poleLabels = {
   logistique: 'Logistique'
 };
 
+// Connexion
+const handleLogin = async () => {
+  loginError.value = '';
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: loginEmail.value,
+    password: loginPassword.value
+  });
+
+  if (error) {
+    loginError.value = 'Identifiants incorrects.';
+  } else {
+    user.value = data.user;
+    loadData();
+  }
+};
+
+// Déconnexion
+const handleLogout = async () => {
+  await supabase.auth.signOut();
+  user.value = null;
+  window.location.hash = ''; // Redirige vers l'accueil
+};
+
+// Vérification de la session au chargement
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  user.value = data.session?.user || null;
+  authLoading.value = false;
+
+  if (user.value) {
+    loadData();
+  }
+});
+
 const loadData = async () => {
-  // Messages
   const { data: msgData } = await supabase.from('messages').select('*').order('id', { ascending: false });
   if (msgData) messages.value = msgData;
 
-  // FAQ
   const { data: faqData } = await supabase.from('faqs').select('*').order('id', { ascending: false });
   if (faqData) faqs.value = faqData;
 
-  // Bénévoles
   const { data: volData } = await supabase.from('volunteers').select('*').order('id', { ascending: false });
   if (volData) volunteers.value = volData;
 };
 
+// Logique existante messages / FAQ / bénévoles
 const selectMsg = async (msg) => {
   selectedMessage.value = msg;
   if (!msg.read) {
@@ -90,23 +128,89 @@ const deleteFaq = async (id) => {
   faqs.value = faqs.value.filter(f => f.id !== id);
   triggerToast('Question retirée de la FAQ.');
 };
-
-onMounted(loadData);
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-100 p-4 sm:p-8">
+  <!-- Chargement initial -->
+  <div v-if="authLoading" class="min-h-screen flex items-center justify-center bg-slate-100">
+    <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600"></i>
+  </div>
+
+  <!-- ÉCRAN 1 : FORMULAIRE DE CONNEXION (si non connecté) -->
+  <div v-else-if="!user" class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto text-xl mb-3">
+          <i class="fa-solid fa-lock"></i>
+        </div>
+        <h2 class="text-2xl font-black text-slate-900">Espace réservé</h2>
+        <p class="text-xs text-slate-500 mt-1">Connexion requise pour accéder aux messages et à la FAQ.</p>
+      </div>
+
+      <form @submit.prevent="handleLogin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Adresse e-mail</label>
+          <input 
+            v-model="loginEmail" 
+            required 
+            type="email" 
+            placeholder="admin@pasdoubli.fr"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" 
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Mot de passe</label>
+          <input 
+            v-model="loginPassword" 
+            required 
+            type="password" 
+            placeholder="••••••••"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" 
+          />
+        </div>
+
+        <p v-if="loginError" class="text-xs text-rose-600 font-semibold text-center">
+          {{ loginError }}
+        </p>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-sm transition cursor-pointer"
+        >
+          Se connecter
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <a href="/" class="text-xs text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-arrow-left mr-1"></i>Retour au site
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ÉCRAN 2 : TABLEAU DE BORD (si authentifié) -->
+  <div v-else class="min-h-screen bg-slate-100 p-4 sm:p-8">
     <div class="max-w-6xl mx-auto">
       
-      <!-- En-tête -->
+      <!-- En-tête avec bouton Déconnexion -->
       <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
         <div>
           <h1 class="text-2xl font-black text-slate-900">Espace Administration</h1>
-          <p class="text-xs text-slate-500">Gestion des messages, candidatures et FAQ</p>
+          <p class="text-xs text-slate-500">Connecté en tant que {{ user.email }}</p>
         </div>
-        <a href="/" class="text-xs font-bold text-emerald-700 bg-white border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-50 transition">
-          <i class="fa-solid fa-arrow-left mr-1.5"></i>Retour au site
-        </a>
+        <div class="flex items-center gap-3">
+          <a href="/" class="text-xs font-bold text-emerald-700 bg-white border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-50 transition">
+            <i class="fa-solid fa-globe mr-1.5"></i>Voir le site
+          </a>
+          <button 
+            @click="handleLogout" 
+            class="text-xs font-bold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 px-3.5 py-2 rounded-xl transition cursor-pointer"
+          >
+            <i class="fa-solid fa-right-from-bracket mr-1.5"></i>Déconnexion
+          </button>
+        </div>
       </div>
 
       <!-- Onglets -->
@@ -134,7 +238,7 @@ onMounted(loadData);
         </button>
       </div>
 
-      <!-- ONGLET 1 : MESSAGES -->
+      <!-- VUE 1 : MESSAGES -->
       <div v-if="currentTab === 'messages'" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 max-h-[620px] overflow-y-auto shadow-xs">
           <div 
@@ -218,7 +322,7 @@ onMounted(loadData);
         </div>
       </div>
 
-      <!-- ONGLET 2 : BÉNÉVOLES -->
+      <!-- VUE 2 : BÉNÉVOLES -->
       <div v-if="currentTab === 'benevoles'" class="space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 shadow-xs overflow-hidden">
           <div 
@@ -237,7 +341,6 @@ onMounted(loadData);
                 </span>
               </div>
 
-              <!-- Pôles retenus -->
               <div class="flex flex-wrap gap-1.5 pt-0.5">
                 <span 
                   v-for="pole in b.poles" 
@@ -249,7 +352,6 @@ onMounted(loadData);
                 </span>
               </div>
 
-              <!-- Coordonnées -->
               <div class="flex items-center gap-4 text-xs text-slate-600 pt-1 flex-wrap">
                 <a :href="`mailto:${b.email}`" class="text-emerald-700 hover:underline flex items-center gap-1.5 font-medium">
                   <i class="fa-regular fa-envelope"></i>{{ b.email }}
@@ -259,13 +361,11 @@ onMounted(loadData);
                 </a>
               </div>
 
-              <!-- Remarques éventuelles -->
               <p v-if="b.remarques" class="text-xs text-slate-600 italic bg-slate-50 border border-slate-100 p-2.5 rounded-xl max-w-2xl mt-1">
                 « {{ b.remarques }} »
               </p>
             </div>
 
-            <!-- Actions -->
             <div class="flex items-center gap-2 self-end lg:self-center">
               <a 
                 :href="`mailto:${b.email}?subject=Association Pas d'oubli - Votre candidature bénévole&body=Bonjour ${b.prenom},%0D%0A%0D%0ANous vous remercions pour votre proposition d'aide sur l'événement Pas d'oubli...`"
@@ -290,7 +390,7 @@ onMounted(loadData);
         </div>
       </div>
 
-      <!-- ONGLET 3 : FAQ -->
+      <!-- VUE 3 : FAQ -->
       <div v-if="currentTab === 'faq'" class="space-y-4">
         <div class="flex justify-end">
           <button 

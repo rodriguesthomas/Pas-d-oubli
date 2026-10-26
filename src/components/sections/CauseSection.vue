@@ -1,6 +1,6 @@
 <script setup>
 import logoUrl from '../../assets/logo.png';
-import logoFAUrl from '../../assets/logoFA';
+import logoFAUrl from '../../assets/logoFA.png';
 
 const pillars = [
   {
@@ -52,10 +52,12 @@ const pillars = [
                 <img :src="logoUrl" alt="Logo Pas d'oubli" class="w-full h-full object-contain" />
               </div>
               <span class="text-2xl font-black text-slate-400">+ </span>
-              <div class="px-3 py-2 bg-white rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[10px] font-bold">
-                  <img :src="logoFAUrl" alt= "logo-france-alzheimer"/>
-                </div>
+              <div class="px-2.5 py-1.5 bg-[#3aa882] rounded-xl shadow-xs flex items-center justify-center">
+                <img 
+                  :src="logoFAUrl" 
+                  alt="logo-france-alzheimer" 
+                  class="h-9 w-auto object-contain block"
+                />
               </div>
             </div>
 

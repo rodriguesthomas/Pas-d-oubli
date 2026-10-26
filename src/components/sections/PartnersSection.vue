@@ -29,7 +29,7 @@ onMounted(fetchSponsors);
       <!-- Encart Bénévoles -->
       <div id="benevoles" class="bg-gradient-to-br from-emerald-800 to-emerald-950 rounded-3xl p-8 sm:p-12 text-white mb-16 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <span class="text-xs uppercase font-bold tracking-widest text-emerald-300">Mobilisation[cite: 1]</span>
+          <span class="text-xs uppercase font-bold tracking-widest text-emerald-300">Mobilisation</span>
           <h3 class="text-2xl sm:text-3xl font-black mt-1">Envie de vivre l'aventure de l'intérieur ?</h3>
           <p class="text-emerald-100 text-sm sm:text-base mt-2 max-w-xl">
             Signaleurs, ravitaillement, accueil : rejoignez notre équipe bénévole pour faire de cette première édition une réussite !
@@ -39,18 +39,18 @@ onMounted(fetchSponsors);
           @click="openModal('benevole')" 
           class="flex-shrink-0 px-6 py-3.5 bg-white text-emerald-900 font-bold text-sm rounded-xl hover:bg-slate-100 transition shadow-md cursor-pointer"
         >
-          <i class="fa-solid fa-hand-holding-heart mr-2"></i>Devenir bénévole[cite: 1]
+          <i class="fa-solid fa-hand-holding-heart mr-2"></i>Devenir bénévole
         </button>
       </div>
 
       <!-- Partenaires & Mécènes -->
       <div class="text-center max-w-2xl mx-auto mb-10">
         <span class="text-emerald-700 bg-white border border-emerald-200 text-xs uppercase font-bold tracking-wider px-3.5 py-1 rounded-full shadow-xs">
-          Soutiens & Mécénat d'Entreprise[cite: 1]
+          Soutiens & Mécénat d'Entreprise
         </span>
-        <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">Ils soutiennent l'événement[cite: 1]</h3>
+        <h3 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3">Ils soutiennent l'événement</h3>
         <p class="text-slate-700 mt-2 text-sm font-medium">
-          Entreprises, commerçants : associez votre image à une action positive avec une déduction d'impôt de <strong>60%</strong>[cite: 1].
+          Entreprises, commerçants : associez votre image à une action positive avec une déduction d'impôt de <strong>60%</strong>.
         </p>
       </div>
 

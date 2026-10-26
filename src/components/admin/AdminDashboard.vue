@@ -5,23 +5,33 @@ import { useToast } from '../../composables/useToast';
 
 const { triggerToast } = useToast();
 
-// État d'authentification
+// ================= ÉTAT D'AUTHENTIFICATION ================= //
 const user = ref(null);
 const authLoading = ref(true);
 const loginEmail = ref('');
 const loginPassword = ref('');
 const loginError = ref('');
 
-// Données de l'admin
-const currentTab = ref('messages');
+// ================= GESTION DES ONGLETS & DONNÉES ================= //
+const currentTab = ref('messages'); // 'messages' | 'benevoles' | 'faq' | 'sponsors'
+
 const messages = ref([]);
-const faqs = ref([]);
-const volunteers = ref([]);
 const selectedMessage = ref(null);
 
+const volunteers = ref([]);
+const faqs = ref([]);
+const sponsors = ref([]);
+
+// Modale & formulaire FAQ
 const showFaqModal = ref(false);
 const faqForm = ref({ question: '', reponse: '' });
 
+// Modale & formulaire Sponsor
+const showSponsorModal = ref(false);
+const editingSponsor = ref(null);
+const sponsorForm = ref({ nom: '', description: '', logo_url: '' });
+
+// Dictionnaires de libellés
 const availabilityLabels = {
   jour_j: 'Le jour J (dimanche)',
   veille: 'La veille (samedi)',
@@ -39,7 +49,7 @@ const poleLabels = {
   logistique: 'Logistique'
 };
 
-// Connexion
+// ================= AUTHENTIFICATION ================= //
 const handleLogin = async () => {
   loginError.value = '';
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -48,43 +58,51 @@ const handleLogin = async () => {
   });
 
   if (error) {
-    loginError.value = 'Identifiants incorrects.';
+    loginError.value = 'Identifiants incorrects ou compte inexistant.';
   } else {
     user.value = data.user;
-    loadData();
+    loadAllData();
   }
 };
 
-// Déconnexion
 const handleLogout = async () => {
   await supabase.auth.signOut();
   user.value = null;
-  window.location.hash = ''; // Redirige vers l'accueil
+  window.location.hash = '';
 };
 
-// Vérification de la session au chargement
-onMounted(async () => {
-  const { data } = await supabase.auth.getSession();
-  user.value = data.session?.user || null;
-  authLoading.value = false;
-
-  if (user.value) {
-    loadData();
-  }
-});
-
-const loadData = async () => {
-  const { data: msgData } = await supabase.from('messages').select('*').order('id', { ascending: false });
+// ================= CHARGEMENT CENTRALISÉ DES DONNÉES ================= //
+const loadAllData = async () => {
+  // 1. Messages
+  const { data: msgData } = await supabase
+    .from('messages')
+    .select('*')
+    .order('id', { ascending: false });
   if (msgData) messages.value = msgData;
 
-  const { data: faqData } = await supabase.from('faqs').select('*').order('id', { ascending: false });
+  // 2. Bénévoles
+  const { data: volData } = await supabase
+    .from('volunteers')
+    .select('*')
+    .order('id', { ascending: false });
+  if (volData) volunteers.value = volData;
+
+  // 3. FAQ
+  const { data: faqData } = await supabase
+    .from('faqs')
+    .select('*')
+    .order('id', { ascending: false });
   if (faqData) faqs.value = faqData;
 
-  const { data: volData } = await supabase.from('volunteers').select('*').order('id', { ascending: false });
-  if (volData) volunteers.value = volData;
+  // 4. Sponsors
+  const { data: spData } = await supabase
+    .from('sponsors')
+    .select('*')
+    .order('id', { ascending: true });
+  if (spData) sponsors.value = spData;
 };
 
-// Logique existante messages / FAQ / bénévoles
+// ================= ACTIONS MESSAGES ================= //
 const selectMsg = async (msg) => {
   selectedMessage.value = msg;
   if (!msg.read) {
@@ -100,26 +118,32 @@ const deleteMsg = async (id) => {
   triggerToast('Message supprimé.');
 };
 
-const deleteVolunteer = async (id) => {
-  await supabase.from('volunteers').delete().eq('id', id);
-  volunteers.value = volunteers.value.filter(v => v.id !== id);
-  triggerToast('Candidature retirée.');
-};
-
+// ================= ACTIONS FAQ ================= //
 const openFaqModalFromMessage = (msg) => {
   faqForm.value = { question: msg.message, reponse: '' };
+  showFaqModal.value = true;
+};
+
+const openManualFaqModal = () => {
+  faqForm.value = { question: '', reponse: '' };
   showFaqModal.value = true;
 };
 
 const handleSaveFaq = async () => {
   if (!faqForm.value.question || !faqForm.value.reponse) return;
 
-  const { data, error } = await supabase.from('faqs').insert([faqForm.value]).select();
+  const { data, error } = await supabase
+    .from('faqs')
+    .insert([faqForm.value])
+    .select();
+
   if (!error && data) {
     faqs.value.unshift(data[0]);
     showFaqModal.value = false;
     faqForm.value = { question: '', reponse: '' };
-    triggerToast('Question ajoutée à la FAQ !');
+    triggerToast('Question publiée sur la FAQ !');
+  } else {
+    triggerToast("Erreur lors de l'enregistrement de la FAQ.");
   }
 };
 
@@ -128,15 +152,93 @@ const deleteFaq = async (id) => {
   faqs.value = faqs.value.filter(f => f.id !== id);
   triggerToast('Question retirée de la FAQ.');
 };
+
+// ================= ACTIONS BÉNÉVOLES ================= //
+const deleteVolunteer = async (id) => {
+  await supabase.from('volunteers').delete().eq('id', id);
+  volunteers.value = volunteers.value.filter(v => v.id !== id);
+  triggerToast('Candidature retirée.');
+};
+
+// ================= ACTIONS SPONSORS ================= //
+const openCreateSponsor = () => {
+  editingSponsor.value = null;
+  sponsorForm.value = { nom: '', description: '', logo_url: '' };
+  showSponsorModal.value = true;
+};
+
+const openEditSponsor = (s) => {
+  editingSponsor.value = s;
+  sponsorForm.value = { nom: s.nom, description: s.description || '', logo_url: s.logo_url || '' };
+  showSponsorModal.value = true;
+};
+
+const handleSaveSponsor = async () => {
+  if (!sponsorForm.value.nom) return;
+
+  if (editingSponsor.value) {
+    const { error } = await supabase
+      .from('sponsors')
+      .update({
+        nom: sponsorForm.value.nom,
+        description: sponsorForm.value.description,
+        logo_url: sponsorForm.value.logo_url
+      })
+      .eq('id', editingSponsor.value.id);
+
+    if (!error) {
+      const idx = sponsors.value.findIndex(s => s.id === editingSponsor.value.id);
+      if (idx !== -1) sponsors.value[idx] = { ...editingSponsor.value, ...sponsorForm.value };
+      showSponsorModal.value = false;
+      triggerToast('Sponsor mis à jour avec succès !');
+    } else {
+      triggerToast('Erreur lors de la mise à jour.');
+    }
+  } else {
+    const { data, error } = await supabase
+      .from('sponsors')
+      .insert([sponsorForm.value])
+      .select();
+
+    if (!error && data) {
+      sponsors.value.push(data[0]);
+      showSponsorModal.value = false;
+      triggerToast('Sponsor ajouté avec succès !');
+    } else {
+      triggerToast("Erreur lors de l'enregistrement.");
+    }
+  }
+};
+
+const deleteSponsor = async (id) => {
+  const { error } = await supabase.from('sponsors').delete().eq('id', id);
+  if (!error) {
+    sponsors.value = sponsors.value.filter(s => s.id !== id);
+    triggerToast('Sponsor supprimé.');
+  } else {
+    triggerToast('Erreur lors de la suppression.');
+  }
+};
+
+// Vérification de la session active
+onMounted(async () => {
+  const { data } = await supabase.auth.getSession();
+  user.value = data.session?.user || null;
+  authLoading.value = false;
+
+  if (user.value) {
+    loadAllData();
+  }
+});
 </script>
 
 <template>
-  <!-- Chargement initial -->
+  <!-- Chargement session -->
   <div v-if="authLoading" class="min-h-screen flex items-center justify-center bg-slate-100">
     <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-600"></i>
   </div>
 
-  <!-- ÉCRAN 1 : FORMULAIRE DE CONNEXION (si non connecté) -->
+  <!-- ÉCRAN DE CONNEXION -->
   <div v-else-if="!user" class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
       <div class="text-center mb-6">
@@ -144,7 +246,7 @@ const deleteFaq = async (id) => {
           <i class="fa-solid fa-lock"></i>
         </div>
         <h2 class="text-2xl font-black text-slate-900">Espace réservé</h2>
-        <p class="text-xs text-slate-500 mt-1">Connexion requise pour accéder aux messages et à la FAQ.</p>
+        <p class="text-xs text-slate-500 mt-1">Connexion requise pour accéder aux messages et données de gestion.</p>
       </div>
 
       <form @submit.prevent="handleLogin" class="space-y-4">
@@ -190,15 +292,15 @@ const deleteFaq = async (id) => {
     </div>
   </div>
 
-  <!-- ÉCRAN 2 : TABLEAU DE BORD (si authentifié) -->
+  <!-- PANNEAU D'ADMINISTRATION -->
   <div v-else class="min-h-screen bg-slate-100 p-4 sm:p-8">
     <div class="max-w-6xl mx-auto">
       
-      <!-- En-tête avec bouton Déconnexion -->
-      <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+      <!-- En-tête -->
+      <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 flex-wrap gap-4">
         <div>
           <h1 class="text-2xl font-black text-slate-900">Espace Administration</h1>
-          <p class="text-xs text-slate-500">Connecté en tant que {{ user.email }}</p>
+          <p class="text-xs text-slate-500">Connecté avec {{ user.email }}</p>
         </div>
         <div class="flex items-center gap-3">
           <a href="/" class="text-xs font-bold text-emerald-700 bg-white border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-50 transition">
@@ -213,7 +315,7 @@ const deleteFaq = async (id) => {
         </div>
       </div>
 
-      <!-- Onglets -->
+      <!-- Barre d'onglets -->
       <div class="flex gap-2 mb-6 flex-wrap">
         <button 
           @click="currentTab = 'messages'" 
@@ -227,7 +329,7 @@ const deleteFaq = async (id) => {
           :class="currentTab === 'benevoles' ? 'bg-emerald-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'"
           class="px-5 py-2 rounded-xl font-bold text-xs shadow-xs transition cursor-pointer"
         >
-          Candidatures Bénévoles ({{ volunteers.length }})
+          Bénévoles ({{ volunteers.length }})
         </button>
         <button 
           @click="currentTab = 'faq'" 
@@ -236,9 +338,16 @@ const deleteFaq = async (id) => {
         >
           FAQ ({{ faqs.length }})
         </button>
+        <button 
+          @click="currentTab = 'sponsors'" 
+          :class="currentTab === 'sponsors' ? 'bg-emerald-700 text-white' : 'bg-white text-slate-700 hover:bg-slate-50'"
+          class="px-5 py-2 rounded-xl font-bold text-xs shadow-xs transition cursor-pointer"
+        >
+          Sponsors ({{ sponsors.length }})
+        </button>
       </div>
 
-      <!-- VUE 1 : MESSAGES -->
+      <!-- ONGLET 1 : MESSAGES -->
       <div v-if="currentTab === 'messages'" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 max-h-[620px] overflow-y-auto shadow-xs">
           <div 
@@ -322,7 +431,7 @@ const deleteFaq = async (id) => {
         </div>
       </div>
 
-      <!-- VUE 2 : BÉNÉVOLES -->
+      <!-- ONGLET 2 : BÉNÉVOLES -->
       <div v-if="currentTab === 'benevoles'" class="space-y-4">
         <div class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 shadow-xs overflow-hidden">
           <div 
@@ -390,11 +499,12 @@ const deleteFaq = async (id) => {
         </div>
       </div>
 
-      <!-- VUE 3 : FAQ -->
+      <!-- ONGLET 3 : FAQ -->
       <div v-if="currentTab === 'faq'" class="space-y-4">
-        <div class="flex justify-end">
+        <div class="flex justify-between items-center">
+          <p class="text-xs text-slate-500">Ces questions et réponses sont visibles publiquement sur le site.</p>
           <button 
-            @click="faqForm = { question: '', reponse: '' }; showFaqModal = true" 
+            @click="openManualFaqModal" 
             class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
           >
             <i class="fa-solid fa-plus"></i>
@@ -425,6 +535,60 @@ const deleteFaq = async (id) => {
         </div>
       </div>
 
+      <!-- ONGLET 4 : SPONSORS -->
+      <div v-if="currentTab === 'sponsors'" class="space-y-4">
+        <div class="flex justify-between items-center">
+          <p class="text-xs text-slate-500">Gérez les partenaires et mécènes affichés sur la page d'accueil.</p>
+          <button 
+            @click="openCreateSponsor" 
+            class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
+          >
+            <i class="fa-solid fa-plus"></i>
+            <span>Ajouter un sponsor</span>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div 
+            v-for="s in sponsors" 
+            :key="s.id" 
+            class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between"
+          >
+            <div class="flex items-start gap-4 mb-4">
+              <div class="w-16 h-16 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 flex-shrink-0">
+                <img v-if="s.logo_url" :src="s.logo_url" :alt="s.nom" class="max-h-full max-w-full object-contain" />
+                <i v-else class="fa-solid fa-handshake text-xl text-slate-300"></i>
+              </div>
+              <div class="overflow-hidden">
+                <h4 class="font-bold text-slate-900 text-sm truncate">{{ s.nom }}</h4>
+                <p class="text-xs text-slate-500 line-clamp-2 mt-0.5">{{ s.description || 'Aucune description' }}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button 
+                @click="openEditSponsor(s)" 
+                class="text-xs font-semibold text-slate-700 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1"
+              >
+                <i class="fa-solid fa-pen text-[10px]"></i>
+                <span>Modifier</span>
+              </button>
+              <button 
+                @click="deleteSponsor(s.id)" 
+                class="text-xs font-semibold text-rose-600 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition border border-rose-200 cursor-pointer flex items-center gap-1"
+              >
+                <i class="fa-solid fa-trash text-[10px]"></i>
+                <span>Supprimer</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="sponsors.length === 0" class="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 text-xs">
+          Aucun sponsor répertorié. Cliquez sur « Ajouter un sponsor » pour créer le premier.
+        </div>
+      </div>
+
       <!-- MODALE FAQ -->
       <div v-if="showFaqModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
@@ -444,6 +608,59 @@ const deleteFaq = async (id) => {
             </div>
             <button @click="handleSaveFaq" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition cursor-pointer">
               Publier sur la FAQ
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODALE SPONSOR -->
+      <div v-if="showSponsorModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative">
+          <button @click="showSponsorModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+
+          <h3 class="text-lg font-black text-slate-900 mb-1">
+            {{ editingSponsor ? 'Modifier le sponsor' : 'Nouveau sponsor' }}
+          </h3>
+          <p class="text-xs text-slate-500 mb-4">Ces informations apparaîtront dans la section partenaires.</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nom du partenaire / entreprise</label>
+              <input 
+                v-model="sponsorForm.nom" 
+                type="text" 
+                placeholder="Ex. Super U Athée-sur-Cher"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-emerald-600" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Description / Rôle</label>
+              <input 
+                v-model="sponsorForm.description" 
+                type="text" 
+                placeholder="Ex. Ravitaillement & logistique"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-emerald-600" 
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Lien de l'image / Logo (URL)</label>
+              <input 
+                v-model="sponsorForm.logo_url" 
+                type="url" 
+                placeholder="https://exemple.fr/mon-logo.png"
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm outline-none focus:border-emerald-600" 
+              />
+            </div>
+
+            <button 
+              @click="handleSaveSponsor" 
+              class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm transition cursor-pointer"
+            >
+              {{ editingSponsor ? 'Enregistrer les modifications' : 'Ajouter le sponsor' }}
             </button>
           </div>
         </div>

@@ -40,6 +40,7 @@
           </div>
           <h3 class="text-xl font-bold text-slate-900">Retrait des Dossards </h3>
           <div class="text-slate-600 text-sm space-y-2">
+            <div><strong class="text-slate-800">Lieu :</strong> Salle des fêtes d'Athée-sur-cher |  </div>
             <div><strong class="text-slate-800">Samedi 22 mai :</strong> 15h00 à 18h30 </div>
             <div><strong class="text-slate-800">Dimanche 23 mai :</strong> Dès 08h00 (jusqu'à 30 min avant le départ) </div>
           </div>

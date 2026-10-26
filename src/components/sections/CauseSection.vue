@@ -1,11 +1,12 @@
 <script setup>
 import logoUrl from '../../assets/logo.png';
+import logoFAUrl from '../../assets/logoFA';
 
 const pillars = [
   {
     icon: 'fa-solid fa-house-chimney-medical',
     color: 'bg-emerald-100 text-emerald-700',
-    title: 'Financer les Haltes Relais',
+    title: 'Accueil de jour',
     desc: 'Offrir des lieux d\'accueil adaptés permettant aux personnes fragilisées de conserver une vie sociale et d\'échanger en toute bienveillance.'
   },
   {
@@ -23,8 +24,8 @@ const pillars = [
   {
     icon: 'fa-solid fa-heart-pulse',
     color: 'bg-amber-100 text-amber-700',
-    title: 'Activités Physiques Adaptées',
-    desc: 'Le sport favorise la neuroplasticité. Chaque dossard encourage les ateliers de gym douce et de stimulation motrice pour nos aînés.'
+    title: 'Faire vivre l\'association France Alzheimer 37',
+    desc: 'Permettre à l\'association France Alzheimer 37 de subvenir à ses besoins pour pouvoir aider les malades et aidants'
   }
 ];
 </script>
@@ -52,8 +53,9 @@ const pillars = [
               </div>
               <span class="text-2xl font-black text-slate-400">+ </span>
               <div class="px-3 py-2 bg-white rounded-2xl shadow-sm border border-emerald-100 flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[10px] font-bold">FA </div>
-                <span class="font-extrabold text-xs text-slate-800 leading-tight">FRANCE<br><span class="text-emerald-700">ALZHEIMER 37 </span></span>
+                <div class="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center text-white text-[10px] font-bold">
+                  <img :src="logoFAUrl" alt= "logo-france-alzheimer"/>
+                </div>
               </div>
             </div>
 

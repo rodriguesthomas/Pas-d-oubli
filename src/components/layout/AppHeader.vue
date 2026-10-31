@@ -53,12 +53,17 @@ const closeMenu = () => (isMobileMenuOpen.value = false);
           >Infos Pratiques</a
         >
         <a href="#partenaires" class="hover:text-emerald-700 transition"
+          >Devenir bénévole</a
+        >
+        <a href="#partenaires" class="hover:text-emerald-700 transition"
           >Partenaires</a
         >
         <a href="#contact" class="hover:text-emerald-700 transition">Contact</a>
+
+        <a href="#faq" class="hover:text-emerald-700 transition">FAQ</a>
       </nav>
 
-      <div class="hidden lg:flex items-center">
+      <!-- <div class="hidden lg:flex items-center">
         <a
           href="#epreuves"
           class="bg-emerald-600 text-white font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-emerald-700 transition flex items-center gap-2 shadow-sm"
@@ -66,7 +71,7 @@ const closeMenu = () => (isMobileMenuOpen.value = false);
           <i class="fa-solid fa-person-running"></i>
           <span>Je m'inscris</span>
         </a>
-      </div>
+      </div> -->
 
       <!-- Hamburger mobile -->
       <button
@@ -117,6 +122,12 @@ const closeMenu = () => (isMobileMenuOpen.value = false);
         @click="closeMenu"
         href="#partenaires"
         class="block text-slate-700 font-medium py-1"
+        >Devenir bénévole</a
+      >
+      <a
+        @click="closeMenu"
+        href="#partenaires"
+        class="block text-slate-700 font-medium py-1"
         >Partenaires</a
       >
       <a
@@ -125,13 +136,20 @@ const closeMenu = () => (isMobileMenuOpen.value = false);
         class="block text-slate-700 font-medium py-1"
         >Contact</a
       >
+
       <a
+        @click="closeMenu"
+        href="#faq"
+        class="block text-slate-700 font-medium py-1"
+        >FAQ</a
+      >
+      <!-- <a
         @click="closeMenu"
         href="#epreuves"
         class="block w-full text-center bg-emerald-600 text-white font-semibold py-2.5 rounded-xl"
       >
         Je m'inscris aux courses
-      </a>
+      </a> -->
     </div>
   </header>
 </template>

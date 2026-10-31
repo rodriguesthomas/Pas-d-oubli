@@ -46,7 +46,6 @@ onMounted(() => {
   </div>
 
   <div v-else class="min-h-screen w-full flex flex-col font-sans text-slate-800 bg-white">
-    <TopBanner />
     <AppHeader />
 
     <main class="w-full flex-1">

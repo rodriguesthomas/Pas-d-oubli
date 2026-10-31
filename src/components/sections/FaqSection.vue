@@ -27,9 +27,6 @@ onMounted(fetchFaqs);
   <section id="faq" class="py-20 bg-transparent">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
-        <span class="text-emerald-700 bg-white border border-emerald-200 text-xs uppercase font-bold tracking-wider px-3.5 py-1 rounded-full shadow-xs">
-          Foire Aux Questions
-        </span>
         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">Questions Fréquentes</h2>
         <p class="text-slate-600 mt-2 text-sm sm:text-base">
           Toutes les réponses pour préparer votre venue à l'événement.

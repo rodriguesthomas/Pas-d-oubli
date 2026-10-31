@@ -1,22 +1,22 @@
 <script setup>
 const features = [
   {
-    icon: 'fa-solid fa-mug-hot text-emerald-400',
+    icon: 'fa-solid text-emerald-400',
     title: 'Buvette & Restauration',
     desc: "Café d'accueil, sandwichs frais locaux, jus de fruits artisanaux et fouées locaux.",
   },
   {
-    icon: 'fa-solid fa-dice text-amber-400',
+    icon: 'fa-solid text-amber-400',
     title: 'Animation sur la maladie',
     desc: 'Stands organisés pour sensibiliser et informer sur la maladie, animés par les bénévoles de France Alzheimer 37.',
   },
   {
-    icon: 'fa-solid fa-camera text-teal-400',
+    icon: 'fa-solid text-teal-400',
     title: 'Photocall Souvenir',
     desc: 'Repartez avec votre cliché de la journée avec votre dossard ou votre médaille.',
   },
   {
-    icon: 'fa-solid fa-shield-halved text-rose-400',
+    icon: 'fa-solic text-rose-400',
     title: 'Poste de Secours',
     desc: 'Dispositif Prévisionnel de Secours assuré par la Croix-Rouge française.',
   },
@@ -32,11 +32,6 @@ const features = [
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         <!-- Colonne gauche -->
         <div class="lg:col-span-6 space-y-6">
-          <span
-            class="inline-flex items-center px-3.5 py-1.5 rounded-full bg-emerald-600/20 border border-emerald-400/30 text-emerald-300 text-xs font-semibold"
-          >
-            Projet Intergénérationnel 
-          </span>
           <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
             Un village festif 
           </h2>
@@ -51,7 +46,7 @@ const features = [
               <div
                 class="w-10 h-10 rounded-xl bg-amber-400 text-slate-900 flex items-center justify-center font-bold text-lg flex-shrink-0"
               >
-                🥞 
+                
               </div>
               <div>
                 <h4 class="font-bold text-white text-base">
@@ -70,7 +65,7 @@ const features = [
               <div
                 class="w-10 h-10 rounded-xl bg-emerald-400 text-slate-900 flex items-center justify-center font-bold text-lg flex-shrink-0"
               >
-                🎯 
+                
               </div>
               <div>
                 <h4 class="font-bold text-white text-base">

@@ -65,7 +65,7 @@ const afternoonSchedule = [
   },
   {
     time: '14h30',
-    title: 'Ateliers Mémoire & Jeux Géants en Bois',
+    title: 'Ateliers Mémoire ',
     desc: 'Activités intergénérationnelles sur l\'esplanade du village.',
     details: 'Jeux d’adresse et de logique en accès libre pour les enfants, les aînés et leurs accompagnants.'
   },
@@ -90,9 +90,6 @@ const handleItemClick = (item) => {
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- En-tête -->
       <div class="text-center mb-10">
-        <span class="text-emerald-700 bg-emerald-50 border border-emerald-200 text-xs uppercase font-bold tracking-wider px-3.5 py-1 rounded-full">
-          Planning du Jour J
-        </span>
         <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-3">Le Programme de la Journée</h2>
         <p class="text-slate-600 mt-2 text-sm">Cliquez sur un horaire pour afficher tous les détails.</p>
 
@@ -103,14 +100,14 @@ const handleItemClick = (item) => {
             :class="activeTab === 'matin' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600'" 
             class="px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer"
           >
-            <i class="fa-solid fa-sun text-amber-500"></i>Matinée Sportive (8h - 12h15)
+            <i class="fa-solid text-amber-500"></i>Matinée Sportive (8h - 12h15)
           </button>
           <button 
             @click="activeTab = 'aprem'" 
             :class="activeTab === 'aprem' ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-600'" 
             class="px-5 py-2.5 rounded-xl font-bold text-sm transition flex items-center gap-2 cursor-pointer"
           >
-            <i class="fa-solid fa-hand-holding-heart text-emerald-600"></i>Après-midi Village (12h15 - 17h)
+            <i class="fa-solid text-emerald-600"></i>Après-midi Village (12h15 - 17h)
           </button>
         </div>
       </div>

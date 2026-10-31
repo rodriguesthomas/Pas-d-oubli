@@ -24,6 +24,7 @@ export const RACES = [
     track: 'Route',
     supplies: 'Arrivée',
     condition: 'PPS / FFA requis',
+    isAlertCondition: true,
     price: 6,
     detailsText:
       "Départ à 10h00. Une boucle accessible alternant route et sentiers stabilisés. Idéale pour courir sans pression pour la cause. Ravitaillement complet à l'arrivée. Dès 14 ans.",
@@ -37,6 +38,7 @@ export const RACES = [
     departure: '11h00',
     track: 'Route',
     supplies: 'Arrivée',
+    isAlertCondition: true,
     condition: 'Autorisation parentale',
     price: 3,
     detailsText:

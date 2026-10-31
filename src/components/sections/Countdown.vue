@@ -59,7 +59,7 @@ const { days, hours, minutes, seconds } = useCountdown("2027-05-23T09:00:00");
           <span class="block text-3xl sm:text-3xl font-black font-mono text-white leading-tight">
             {{ seconds }}
           </span>
-          <span class="text-[9px] sm:text-xs uppercase font-bold text-emerald-200/60 tracking-wider">Min</span>
+          <span class="text-[9px] sm:text-xs uppercase font-bold text-emerald-200/60 tracking-wider">Sec</span>
         </div>
       </div>
 

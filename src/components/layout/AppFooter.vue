@@ -38,7 +38,7 @@ const currentYear = new Date().getFullYear();
             <li>100% des bénéfices reversés </li>
             <li>Ravitaillements éco-conçus </li>
             <li>Parcours sécurisés</li>
-            <li>Eévènements intergénérationnels</li>
+            <li>Evènements intergénérationnels</li>
           </ul>
         </div>
 
@@ -50,9 +50,8 @@ const currentYear = new Date().getFullYear();
           <p class="text-slate-400">Vice-présidente : Lucie Rodrigues da Conceicao </p>
           <p class="text-slate-400 mt-1">
             <a href="mailto:rodrigues.thomas2005@gmail.com" class="text-emerald-400 hover:underline">
+              contact@pasdoubli.fr
               association.pas.doubli@gmail.com
-              rodrigues.thomas2005@gmail.com 
-              
             </a>
           </p>
         </div>

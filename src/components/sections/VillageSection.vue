@@ -33,7 +33,7 @@ const features = [
         <!-- Colonne gauche -->
         <div class="lg:col-span-6 space-y-6">
           <h2 class="text-3xl sm:text-4xl font-extrabold tracking-tight">
-            Un village festif 
+            Un village solidaire 
           </h2>
           <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
             Parce que la solidarité unit toutes les générations. 

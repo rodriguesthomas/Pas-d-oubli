@@ -19,6 +19,7 @@ import VillageSection from './components/sections/VillageSection.vue';
 import PracticalSection from './components/sections/PracticalSection.vue';
 import PartnersSection from './components/sections/PartnersSection.vue';
 import ContactSection from './components/sections/ContactSection.vue';
+import MoneySection from './components/sections/MoneySection.vue';
 
 // Espace d'administration
 import AdminDashboard from './components/admin/AdminDashboard.vue';
@@ -62,12 +63,16 @@ onMounted(() => {
 
         <!-- Sections superposées à l'image -->
         <div class="relative z-10">
+          
           <AboutSection />
+
           <CauseSection />
           <RacesSection />
+          
           <ScheduleSection />
           <VillageSection />
           <PracticalSection />
+          <MoneySection />
           <PartnersSection />
           <ContactSection />
           <FaqSection />

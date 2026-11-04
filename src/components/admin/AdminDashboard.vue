@@ -1227,7 +1227,7 @@ onMounted(async () => {
       <button @click="showFaqModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
-      <h3 class="text-lg font-black text-slate-900 mb-1">Publier une question FAQ</h3>
+      <h3 class="text-lg font-black text-slate-900 mb-1">Publier une question</h3>
       <div class="space-y-4 mt-4">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Question</label>

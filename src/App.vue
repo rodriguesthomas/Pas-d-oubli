@@ -70,7 +70,7 @@ onMounted(() => {
           <RacesSection />
           
           <ScheduleSection />
-          <VillageSection />
+          <!-- <VillageSection /> -->
           <PracticalSection />
           <MoneySection />
           <PartnersSection />

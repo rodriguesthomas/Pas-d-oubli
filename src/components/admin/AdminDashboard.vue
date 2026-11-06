@@ -13,6 +13,9 @@ const loginEmail = ref('');
 const loginPassword = ref('');
 const loginError = ref('');
 
+// Modale changement de compte rapide
+const showSwitchAccountModal = ref(false);
+
 const directionEmails = [
   'rodrigues.thomas2005@gmail.com',
   'lucierdg@outlook.com'
@@ -42,7 +45,7 @@ const userRoleTitle = computed(() => {
   return roleMap[currentRole.value] || 'Membre Association';
 });
 
-// ================= GESTION DU KANBAN ET DES PÔLES ================= //
+// ================= PÔLES & GESTION KANBAN ================= //
 const allPoles = [
   { id: 'animation', label: 'Animation', icon: 'fa-bullhorn' },
   { id: 'sponsor', label: 'Sponsors', icon: 'fa-handshake' },
@@ -52,7 +55,6 @@ const allPoles = [
   { id: 'parcours', label: 'Parcours', icon: 'fa-route' }
 ];
 
-// Filtre des pôles selon le rôle
 const accessiblePoles = computed(() => {
   if (isDirection.value) return allPoles;
   return allPoles.filter(p => p.id === currentRole.value);
@@ -60,11 +62,11 @@ const accessiblePoles = computed(() => {
 
 const selectedPole = ref('communication');
 
-// Vérification de permission pour chaque onglet
 const canAccessTab = (tab) => {
   if (isDirection.value) return true;
   const r = currentRole.value;
   if (tab === 'poles') return accessiblePoles.value.length > 0;
+  if (tab === 'materiel') return true;
   if (tab === 'messages') return r === 'communication';
   if (tab === 'benevoles') return r === 'communication';
   if (tab === 'faq') return r === 'communication';
@@ -85,28 +87,58 @@ const fundraisingCurrent = ref(0);
 const fundraisingGoal = ref(5000);
 const updatingFundraising = ref(false);
 
-// Données Kanban
+// Kanban
 const tasks = ref([]);
 const steps = ref([]);
 const comments = ref([]);
 
 const columns = [
-  { id: 'sujet', label: 'Sujet / Idée', bgHeader: 'bg-amber-100 text-amber-900 border-amber-300' },
-  { id: 'a_faire', label: 'À faire', bgHeader: 'bg-blue-100 text-blue-900 border-blue-300' },
-  { id: 'en_cours', label: 'En cours', bgHeader: 'bg-purple-100 text-purple-900 border-purple-300' },
-  { id: 'fait', label: 'Fait', bgHeader: 'bg-emerald-100 text-emerald-900 border-emerald-300' }
+  { id: 'sujet', label: 'Sujet / Idée', bgHeader: ' text-emerald-900 border-emerald-900' },
+  { id: 'a_faire', label: 'À faire', bgHeader: 'text-emerald-900 border-emerald-900' },
+  { id: 'en_cours', label: 'En cours', bgHeader: 'text-emerald-900 border-emerald-900' },
+  { id: 'fait', label: 'Fait', bgHeader: 'text-emerald-900 border-emerald-900' }
 ];
 
-// Modales Post-its
+// Modales Post-it
 const showTaskModal = ref(false);
 const editingTask = ref(null);
 const taskForm = ref({ titre: '', description: '', assigne_a: '', status: 'sujet' });
 
-// Modale de détail (Étapes évolutives + Commentaires)
 const showDetailModal = ref(false);
 const currentTaskDetail = ref(null);
 const newStepTitle = ref('');
 const newComment = ref('');
+
+// ================= GESTION DU MATÉRIEL & COMMENTAIRES LOGISTIQUE ================= //
+const materialRequests = ref([]);
+const showMaterialModal = ref(false);
+const materialForm = ref({
+  article: '',
+  quantite: 1,
+  details: '',
+  pole: ''
+});
+
+// Modale d'ajout/modification du commentaire logistique
+const showLogistiqueCommentModal = ref(false);
+const currentMaterialItem = ref(null);
+const logistiqueCommentInput = ref('');
+
+const materialStatusList = [
+  { id: 'en_attente', label: 'En attente', badge: 'bg-amber-100 text-amber-900 border-amber-200' },
+  { id: 'valide', label: 'Validé', badge: 'bg-blue-100 text-blue-900 border-blue-200' },
+  { id: 'disponible', label: 'Disponible / Prêté', badge: 'bg-emerald-100 text-emerald-900 border-emerald-200' },
+  { id: 'refuse', label: 'Refusé', badge: 'bg-rose-100 text-rose-900 border-rose-200' }
+];
+
+const isLogistiqueOrDirection = computed(() => {
+  return isDirection.value || currentRole.value === 'logistique';
+});
+
+const filteredMaterialRequests = computed(() => {
+  if (isLogistiqueOrDirection.value) return materialRequests.value;
+  return materialRequests.value.filter(m => m.pole === currentRole.value);
+});
 
 // Modales FAQ & Sponsors
 const showFaqModal = ref(false);
@@ -134,7 +166,7 @@ const poleLabels = {
   logistique: 'Logistique'
 };
 
-// ================= AUTHENTIFICATION & CHARGEMENT ================= //
+// ================= AUTHENTIFICATION & CHANGEMENT DE COMPTE ================= //
 const handleLogin = async () => {
   loginError.value = '';
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -146,7 +178,10 @@ const handleLogin = async () => {
     loginError.value = 'Identifiants incorrects ou compte inexistant.';
   } else {
     user.value = data.user;
+    loginPassword.value = '';
+    showSwitchAccountModal.value = false;
     await fetchProfileAndData();
+    triggerToast(`Connecté sous : ${user.value.email}`);
   }
 };
 
@@ -157,10 +192,17 @@ const handleLogout = async () => {
   window.location.hash = '';
 };
 
+// Bascule rapide vers un autre compte
+const openSwitchAccount = () => {
+  loginEmail.value = '';
+  loginPassword.value = '';
+  loginError.value = '';
+  showSwitchAccountModal.value = true;
+};
+
 const fetchProfileAndData = async () => {
   if (!user.value) return;
 
-  // Récupération du profil en base si ce n'est pas un email de direction en dur
   if (!directionEmails.includes(user.value.email?.toLowerCase())) {
     const { data: prof } = await supabase
       .from('profiles')
@@ -171,15 +213,16 @@ const fetchProfileAndData = async () => {
     if (prof) {
       userProfile.value = prof;
     } else {
-      // Déduction de secours selon le préfixe de l'email
       const em = user.value.email.toLowerCase();
       if (em.includes('com')) userProfile.value = { role: 'communication' };
       else if (em.includes('sponsor')) userProfile.value = { role: 'sponsor' };
       else if (em.includes('tresor')) userProfile.value = { role: 'tresorerie' };
+      else if (em.includes('logist')) userProfile.value = { role: 'logistique' };
+      else if (em.includes('anim')) userProfile.value = { role: 'animation' };
+      else if (em.includes('parcours')) userProfile.value = { role: 'parcours' };
     }
   }
 
-  // Verrouiller la sélection sur le pôle de l'utilisateur
   if (accessiblePoles.value.length > 0) {
     selectedPole.value = accessiblePoles.value[0].id;
   }
@@ -190,6 +233,7 @@ const fetchProfileAndData = async () => {
 
 const loadPermittedData = async () => {
   loadPoleData();
+  fetchMaterialRequests();
 
   if (canAccessTab('messages')) {
     const { data } = await supabase.from('messages').select('*').order('id', { ascending: false });
@@ -303,7 +347,6 @@ const deleteTask = async (taskId) => {
   }
 };
 
-// Drag & Drop
 const onDragStart = (event, task) => {
   event.dataTransfer.setData('taskId', task.id.toString());
 };
@@ -320,7 +363,7 @@ const onDrop = async (event, newStatus) => {
   }
 };
 
-// ================= GESTION DES ÉTAPES & COMMENTAIRES DU POST-IT ================= //
+// ================= ÉTAPES ÉVOLUTIVES & COMMENTAIRES POST-IT ================= //
 const openDetail = (task) => {
   currentTaskDetail.value = task;
   newStepTitle.value = '';
@@ -382,7 +425,82 @@ const addComment = async () => {
   }
 };
 
-// ================= ACTIONS SPONSORS / CAGNOTTE / FAQ / MESSAGES ================= //
+// ================= MATÉRIEL & COMMENTAIRES LOGISTIQUE ================= //
+const fetchMaterialRequests = async () => {
+  const { data } = await supabase
+    .from('material_requests')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (data) materialRequests.value = data;
+};
+
+const openMaterialRequestModal = () => {
+  materialForm.value = {
+    article: '',
+    quantite: 1,
+    details: '',
+    pole: isDirection.value ? selectedPole.value : currentRole.value
+  };
+  showMaterialModal.value = true;
+};
+
+const submitMaterialRequest = async () => {
+  if (!materialForm.value.article || materialForm.value.quantite < 1) return;
+
+  const payload = {
+    pole: materialForm.value.pole || currentRole.value,
+    demandeur: userRoleTitle.value,
+    article: materialForm.value.article.trim(),
+    quantite: materialForm.value.quantite,
+    details: materialForm.value.details?.trim() || null,
+    status: 'en_attente'
+  };
+
+  const { data, error } = await supabase.from('material_requests').insert([payload]).select();
+  if (!error && data) {
+    materialRequests.value.unshift(data[0]);
+    showMaterialModal.value = false;
+    triggerToast('Demande transmise à la logistique !');
+  }
+};
+
+const updateMaterialStatus = async (item, newStatus) => {
+  item.status = newStatus;
+  await supabase.from('material_requests').update({ status: newStatus }).eq('id', item.id);
+  triggerToast(`Statut actualisé : ${materialStatusList.find(s => s.id === newStatus).label}`);
+};
+
+const openLogistiqueComment = (item) => {
+  currentMaterialItem.value = item;
+  logistiqueCommentInput.value = item.reponse_logistique || '';
+  showLogistiqueCommentModal.value = true;
+};
+
+const saveLogistiqueComment = async () => {
+  if (!currentMaterialItem.value) return;
+
+  const commentVal = logistiqueCommentInput.value.trim() || null;
+  const { error } = await supabase
+    .from('material_requests')
+    .update({ reponse_logistique: commentVal })
+    .eq('id', currentMaterialItem.value.id);
+
+  if (!error) {
+    currentMaterialItem.value.reponse_logistique = commentVal;
+    showLogistiqueCommentModal.value = false;
+    triggerToast('Commentaire logistique enregistré !');
+  }
+};
+
+const deleteMaterialRequest = async (id) => {
+  const { error } = await supabase.from('material_requests').delete().eq('id', id);
+  if (!error) {
+    materialRequests.value = materialRequests.value.filter(m => m.id !== id);
+    triggerToast('Demande supprimée.');
+  }
+};
+
+// ================= AUTRES ACTIONS (MESSAGES / FAQ / SPONSORS / CAGNOTTE) ================= //
 const selectMsg = async (msg) => {
   selectedMessage.value = msg;
   if (!msg.read) {
@@ -502,7 +620,7 @@ onMounted(async () => {
     <i class="fa-solid fa-circle-notch fa-spin text-3xl text-emerald-600"></i>
   </div>
 
-  <!-- CONNEXION -->
+  <!-- CONNEXION INITIALE -->
   <div v-else-if="!user" class="min-h-screen bg-slate-900 flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl">
       <div class="text-center mb-6">
@@ -538,11 +656,11 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- TABLEAU DE BORD DYNAMIQUE -->
+  <!-- TABLEAU DE BORD CONNECTÉ -->
   <div v-else class="min-h-screen bg-slate-100 p-4 sm:p-8">
     <div class="max-w-7xl mx-auto">
       
-      <!-- En-tête -->
+      <!-- En-tête avec bouton CHANGER DE COMPTE -->
       <div class="flex items-center justify-between mb-8 pb-4 border-b border-slate-200 flex-wrap gap-4">
         <div>
           <div class="flex items-center gap-3">
@@ -556,11 +674,23 @@ onMounted(async () => {
           </div>
           <p class="text-xs text-slate-500 mt-0.5">Connecté sous {{ user.email }}</p>
         </div>
-        <div class="flex items-center gap-3">
-          <a href="/" class="text-xs font-bold text-emerald-700 bg-white border border-emerald-300 px-3.5 py-2 rounded-xl hover:bg-emerald-50 transition">
-            <i class="fa-solid fa-globe mr-1.5"></i>Voir le site
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <!-- BOUTON : CHANGER DE COMPTE -->
+          <button 
+            @click="openSwitchAccount" 
+            class="text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+            title="Se connecter avec un autre compte ou pôle"
+          >
+            <i class="fa-solid fa-users-gear text-emerald-600"></i>
+            <span>Changer de compte</span>
+          </button>
+
+          <a href="/" class="text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
+            <i class="fa-solid fa-globe text-emerald-600"></i>Voir le site
           </a>
-          <button @click="handleLogout" class="text-xs font-bold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 px-3.5 py-2 rounded-xl transition cursor-pointer">
+
+          <button @click="handleLogout" class="text-xs font-bold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 shadow-2xs">
             <i class="fa-solid fa-right-from-bracket mr-1.5"></i>Déconnexion
           </button>
         </div>
@@ -576,6 +706,15 @@ onMounted(async () => {
         >
           <i class="fa-solid fa-table-columns"></i>
           <span>Tableau Kanban</span>
+        </button>
+
+        <button 
+          @click="currentTab = 'materiel'" 
+          :class="currentTab === 'materiel' ? 'bg-emerald-700 text-white shadow-xs' : 'bg-white text-slate-700 hover:bg-slate-50 border border-slate-200'"
+          class="px-5 py-2.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-2"
+        >
+          <i class="fa-solid fa-boxes-stacked"></i>
+          <span>Besoins Matériel ({{ filteredMaterialRequests.length }})</span>
         </button>
 
         <button 
@@ -628,8 +767,6 @@ onMounted(async () => {
 
       <!-- ================= VUE KANBAN ================= -->
       <div v-if="currentTab === 'poles'" class="space-y-6">
-        
-        <!-- Sélecteur de pôle (affiché uniquement si la direction a accès à plusieurs pôles) -->
         <div v-if="accessiblePoles.length > 1" class="bg-white rounded-2xl border border-slate-200 p-2.5 shadow-xs flex items-center gap-2 overflow-x-auto">
           <button 
             v-for="p in accessiblePoles" 
@@ -646,7 +783,6 @@ onMounted(async () => {
           </button>
         </div>
 
-        <!-- Titre & Nouveau Post-it -->
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-xl font-black text-slate-900 capitalize flex items-center gap-2">
@@ -663,7 +799,6 @@ onMounted(async () => {
           </button>
         </div>
 
-        <!-- Colonnes Kanban -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
           <div 
             v-for="col in columns" 
@@ -712,7 +847,7 @@ onMounted(async () => {
                   {{ task.description }}
                 </p>
 
-                <!-- Jauge des étapes évolutives -->
+                <!-- Progression des étapes -->
                 <div v-if="getTaskProgress(task.id)" class="mb-3 bg-slate-50 border border-slate-100 rounded-lg p-2">
                   <div class="flex justify-between items-center text-[10px] font-bold text-slate-600 mb-1">
                     <span class="flex items-center gap-1">
@@ -729,7 +864,6 @@ onMounted(async () => {
                   </div>
                 </div>
 
-                <!-- Footer carte -->
                 <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
                   <span class="hover:text-emerald-700 font-semibold flex items-center gap-1">
                     <i class="fa-regular fa-comment-dots text-xs"></i>
@@ -749,10 +883,139 @@ onMounted(async () => {
             </div>
           </div>
         </div>
-
       </div>
 
-      <!-- ================= VUE MESSAGES (COM / DIRECTION) ================= -->
+      <!-- ================= VUE BESOINS EN MATÉRIEL ================= -->
+      <div v-if="currentTab === 'materiel'" class="space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-xl font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid text-emerald-600"></i>
+              <span>{{ isLogistiqueOrDirection ? 'Tableau Central du Matériel' : 'Besoins Matériel de votre Pôle' }}</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-0.5">
+              {{ isLogistiqueOrDirection 
+                ? 'Consultez, commentez et validez le matériel demandé par les pôles.' 
+                : 'Transmettez vos besoins et consultez les retours de l’équipe logistique.' }}
+            </p>
+          </div>
+
+          <button 
+            @click="openMaterialRequestModal"
+            class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-2"
+          >
+            <i class="fa-solid fa-plus"></i>
+            <span>Demander du matériel</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
+                  <th class="p-4">Pôle</th>
+                  <th class="p-4">Matériel & Qté</th>
+                  <th class="p-4">Demandeur & Détails</th>
+                  <th class="p-4">Retour Logistique</th>
+                  <th class="p-4">Statut</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="item in filteredMaterialRequests" :key="item.id" class="hover:bg-slate-50/70 transition">
+                  <!-- Pôle -->
+                  <td class="p-4 whitespace-nowrap">
+                    <span class="inline-block px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200">
+                      {{ item.pole }}
+                    </span>
+                  </td>
+
+                  <!-- Article & Qté -->
+                  <td class="p-4">
+                    <div class="font-black text-slate-900 text-sm flex items-center gap-2">
+                      <span>{{ item.article }}</span>
+                      <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-mono font-bold rounded-full">
+                        x{{ item.quantite }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- Demandeur & Précisions -->
+                  <td class="p-4">
+                    <div class="text-slate-700 font-semibold text-[11px]">{{ item.demandeur }}</div>
+                    <p v-if="item.details" class="text-slate-500 italic mt-0.5 text-xs">{{ item.details }}</p>
+                  </td>
+
+                  <!-- RETOUR / COMMENTAIRE DE LA LOGISTIQUE -->
+                  <td class="p-4 max-w-xs">
+                    <div v-if="item.reponse_logistique" class="p-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl text-emerald-900 text-xs">
+                      <div class="font-bold flex items-center gap-1 text-[10px] uppercase text-emerald-700 mb-0.5">
+                        <i class="fa-solid fa-comment-dots"></i>
+                        <span>Note logistique</span>
+                      </div>
+                      <p class="leading-relaxed">{{ item.reponse_logistique }}</p>
+                    </div>
+                    <div v-else class="text-slate-400 italic text-[11px]">
+                      Pas de retour pour l'instant.
+                    </div>
+
+                    <!-- Bouton pour que la logistique ou direction modifie la réponse -->
+                    <button 
+                      v-if="isLogistiqueOrDirection"
+                      @click="openLogistiqueComment(item)"
+                      class="mt-1 text-[11px] font-bold text-emerald-700 hover:underline cursor-pointer flex items-center gap-1"
+                    >
+                      <i class="fa-solid fa-pen text-[9px]"></i>
+                      <span>{{ item.reponse_logistique ? 'Modifier la réponse' : 'Répondre / Annoter' }}</span>
+                    </button>
+                  </td>
+
+                  <!-- Statut -->
+                  <td class="p-4 whitespace-nowrap">
+                    <div v-if="isLogistiqueOrDirection">
+                      <select 
+                        :value="item.status" 
+                        @change="updateMaterialStatus(item, $event.target.value)"
+                        class="px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold outline-none focus:border-emerald-600 bg-white cursor-pointer"
+                      >
+                        <option v-for="st in materialStatusList" :key="st.id" :value="st.id">
+                          {{ st.label }}
+                        </option>
+                      </select>
+                    </div>
+                    <span 
+                      v-else 
+                      :class="[materialStatusList.find(s => s.id === item.status)?.badge, 'px-2.5 py-1 rounded-md text-[11px] font-bold border inline-block']"
+                    >
+                      {{ materialStatusList.find(s => s.id === item.status)?.label }}
+                    </span>
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="p-4 text-right whitespace-nowrap">
+                    <button 
+                      @click="deleteMaterialRequest(item.id)" 
+                      class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition cursor-pointer"
+                      title="Supprimer la demande"
+                    >
+                      <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr v-if="filteredMaterialRequests.length === 0">
+                  <td colspan="6" class="p-10 text-center text-slate-400 italic text-xs">
+                    Aucune demande de matériel enregistrée pour le moment.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= VUE MESSAGES ================= -->
       <div v-if="currentTab === 'messages' && canAccessTab('messages')" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 max-h-[620px] overflow-y-auto shadow-xs">
           <div 
@@ -832,7 +1095,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- ================= VUE BÉNÉVOLES (COM / DIRECTION) ================= -->
+      <!-- ================= VUE BÉNÉVOLES ================= -->
       <div v-if="currentTab === 'benevoles' && canAccessTab('benevoles')" class="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 shadow-xs overflow-hidden">
         <div 
           v-for="b in volunteers" 
@@ -893,14 +1156,14 @@ onMounted(async () => {
         </div>
 
         <div v-if="volunteers.length === 0" class="p-12 text-center text-slate-400 text-xs">
-          Aucune candidature bénévole enregistrée pour le moment.
+          Aucune candidature bénévole enregistrée.
         </div>
       </div>
 
-      <!-- ================= VUE SPONSORS (SPONSOR / DIRECTION) ================= -->
+      <!-- ================= VUE SPONSORS ================= -->
       <div v-if="currentTab === 'sponsors' && canAccessTab('sponsors')" class="space-y-4">
         <div class="flex justify-between items-center">
-          <p class="text-xs text-slate-500">Ajoutez et modifiez les entreprises partenaires de la course.</p>
+          <p class="text-xs text-slate-500">Ajoutez et modifiez les partenaires de la course.</p>
           <button 
             @click="openCreateSponsor" 
             class="px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer flex items-center gap-1.5"
@@ -951,7 +1214,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- ================= VUE CAGNOTTE (TRÉSORERIE / DIRECTION) ================= -->
+      <!-- ================= VUE CAGNOTTE ================= -->
       <div v-if="currentTab === 'cagnotte' && canAccessTab('cagnotte')" class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs max-w-xl">
         <div class="mb-6">
           <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
@@ -995,7 +1258,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- ================= VUE FAQ (COM / DIRECTION) ================= -->
+      <!-- ================= VUE FAQ ================= -->
       <div v-if="currentTab === 'faq' && canAccessTab('faq')" class="space-y-4">
         <div class="flex justify-between items-center">
           <p class="text-xs text-slate-500">Gérez les questions fréquentes affichées sur la page d'accueil.</p>
@@ -1030,7 +1293,90 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- MODALE CRÉATION / ÉDITION POST-IT -->
+  <!-- MODALE : CHANGER DE COMPTE -->
+  <div v-if="showSwitchAccountModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl relative">
+      <button @click="showSwitchAccountModal = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 cursor-pointer text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-2xl flex items-center justify-center mx-auto text-xl mb-2">
+          <i class="fa-solid fa-users-gear"></i>
+        </div>
+        <h3 class="text-xl font-black text-slate-900">Changer de Compte</h3>
+        <p class="text-xs text-slate-500 mt-1">Connectez-vous à un autre pôle ou à la direction.</p>
+      </div>
+
+      <form @submit.prevent="handleLogin" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Nouvel e-mail</label>
+          <input 
+            v-model="loginEmail" 
+            required 
+            type="email" 
+            placeholder="ex: logistique@pasdoubli.fr" 
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" 
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Mot de passe</label>
+          <input 
+            v-model="loginPassword" 
+            required 
+            type="password" 
+            placeholder="••••••••" 
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-emerald-600 outline-none" 
+          />
+        </div>
+
+        <p v-if="loginError" class="text-xs text-rose-600 font-semibold text-center">{{ loginError }}</p>
+
+        <button 
+          type="submit" 
+          class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-sm transition cursor-pointer shadow-md"
+        >
+          Valider le changement
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODALE : RÉPONSE / COMMENTAIRE LOGISTIQUE -->
+  <div v-if="showLogistiqueCommentModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative">
+      <button @click="showLogistiqueCommentModal = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 cursor-pointer text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 class="text-xl font-black text-slate-900 mb-1">Retour Logistique</h3>
+      <p class="text-xs text-slate-500 mb-4">
+        Article : <strong class="text-slate-800">{{ currentMaterialItem?.article }} (x{{ currentMaterialItem?.quantite }})</strong> — Pôle {{ currentMaterialItem?.pole }}
+      </p>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Note pour le demandeur</label>
+          <textarea 
+            v-model="logistiqueCommentInput" 
+            rows="4" 
+            placeholder="Ex. Matériel réservé aux ateliers municipaux, retrait possible samedi à 14h..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs outline-none focus:border-emerald-600"
+          ></textarea>
+        </div>
+
+        <button 
+          @click="saveLogistiqueComment" 
+          class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition cursor-pointer"
+        >
+          Enregistrer le commentaire
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE POST-IT (CRÉATION / ÉDITION) -->
   <div v-if="showTaskModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative">
       <button @click="showTaskModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
@@ -1072,7 +1418,7 @@ onMounted(async () => {
     </div>
   </div>
 
-  <!-- MODALE DE DÉTAIL D'UN POST-IT (ÉTAPES ÉVOLUTIVES & COMMENTAIRES) -->
+  <!-- MODALE DÉTAIL POST-IT (ÉTAPES & COMMENTAIRES) -->
   <div v-if="showDetailModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl relative flex flex-col max-h-[90vh]">
       <button @click="showDetailModal = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 cursor-pointer">
@@ -1093,8 +1439,7 @@ onMounted(async () => {
       </div>
 
       <div class="flex-1 overflow-y-auto space-y-6 pr-1">
-        
-        <!-- SECTION ÉTAPES ÉVOLUTIVES (CHECKLIST) -->
+        <!-- ÉTAPES -->
         <div>
           <div class="flex items-center justify-between mb-2">
             <h4 class="text-xs font-black uppercase text-slate-700 tracking-wider flex items-center gap-1.5">
@@ -1149,7 +1494,7 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- SECTION COMMENTAIRES -->
+        <!-- COMMENTAIRES -->
         <div class="pt-4 border-t border-slate-100">
           <h4 class="text-xs font-black uppercase text-slate-700 tracking-wider mb-2 flex items-center gap-1.5">
             <i class="fa-regular fa-comments text-emerald-600"></i>
@@ -1161,7 +1506,7 @@ onMounted(async () => {
               <div class="flex items-center justify-between font-bold text-slate-800 mb-1">
                 <span class="text-emerald-800 font-extrabold">{{ c.auteur }}</span>
                 <span class="text-[10px] text-slate-400 font-normal">
-                  {{ new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }}
+                  {{ new Date(c.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) }}
                 </span>
               </div>
               <p class="text-slate-600 whitespace-pre-wrap leading-relaxed">{{ c.commentaire }}</p>
@@ -1187,7 +1532,64 @@ onMounted(async () => {
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- MODALE DEMANDE DE MATÉRIEL -->
+  <div v-if="showMaterialModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl relative">
+      <button @click="showMaterialModal = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 cursor-pointer text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <h3 class="text-xl font-black text-slate-900 mb-1">Demande de Matériel</h3>
+      <p class="text-xs text-slate-500 mb-4">Cette requête sera directement transmise au responsable logistique.</p>
+
+      <div class="space-y-3.5">
+        <div v-if="isDirection">
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Pour le pôle</label>
+          <select v-model="materialForm.pole" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs font-bold outline-none focus:border-emerald-600 bg-white">
+            <option v-for="p in allPoles" :key="p.id" :value="p.id">{{ p.label }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Article / Matériel souhaité</label>
+          <input 
+            v-model="materialForm.article" 
+            type="text" 
+            placeholder="Ex. 10 barrières Vauban, 2 barnums 3x3..." 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs outline-none focus:border-emerald-600"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Quantité</label>
+          <input 
+            v-model.number="materialForm.quantite" 
+            type="number" 
+            min="1" 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs outline-none focus:border-emerald-600 font-mono font-bold"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Précisions / Lieu d'installation</label>
+          <textarea 
+            v-model="materialForm.details" 
+            rows="3" 
+            placeholder="Ex. Nécessaire dès 07h30 au ravitaillement..." 
+            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs outline-none focus:border-emerald-600"
+          ></textarea>
+        </div>
+
+        <button 
+          @click="submitMaterialRequest" 
+          class="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl text-xs transition cursor-pointer mt-2"
+        >
+          Transmettre à la logistique
+        </button>
       </div>
     </div>
   </div>
@@ -1227,7 +1629,7 @@ onMounted(async () => {
       <button @click="showFaqModal = false" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer">
         <i class="fa-solid fa-xmark text-lg"></i>
       </button>
-      <h3 class="text-lg font-black text-slate-900 mb-1">Publier une question</h3>
+      <h3 class="text-lg font-black text-slate-900 mb-1">Publier une question FAQ</h3>
       <div class="space-y-4 mt-4">
         <div>
           <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Question</label>
